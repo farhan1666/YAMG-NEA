@@ -11,7 +11,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.mainImage = QtWidgets.QLabel(self.centralwidget)
         self.mainImage.setText("")
-        self.mainImage.setPixmap(QtGui.QPixmap("../../../../Pictures/placeholder.png"))
+        self.mainImage.setPixmap(QtGui.QPixmap("placeholder.png"))
         self.mainImage.setObjectName("mainImage")
         self.verticalLayout_2.addWidget(self.mainImage)
         self.playButton = QtWidgets.QPushButton(self.centralwidget)
