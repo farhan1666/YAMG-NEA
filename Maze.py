@@ -106,13 +106,13 @@ class Maze:
 	def get_distances(self):
 		queue = [0]
 		self.distances[0] = 0
-		print(self.graph)
+		# print(self.graph)
 		while queue:
 			current = queue.pop()
 			for node in self.graph[current]:
 				if node not in self.distances:
 					queue.append(node)
-					print(queue)
+					# print(queue)
 					self.distances[node] = self.distances[current] + 1
 		self.end = self.cells[max(self.distances, key = self.distances.get)].coord
 
@@ -137,8 +137,8 @@ class Maze:
 		self.generate_maze(self.cells[0])
 		self.extra_paths(self.difficulty)
 		self.get_distances()
-		print(self.distances)
-		print(max(self.distances, key = self.distances.get))
+		# print(self.distances)
+		# print(max(self.distances, key = self.distances.get))
 def main(width, height, walls):
 	level_1 = Maze(width, height)
 	level_1.soft_main(walls)

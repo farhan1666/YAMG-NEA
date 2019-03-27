@@ -5,8 +5,8 @@ from GraphGraphics import render_graph
 pygame.init()
 
 #Colours
-black = 0, 0, 255
-white = 255, 255, 50
+black = 0, 0, 0
+white = 255, 255, 255
 orange = 255, 165, 0
 
 class Window:
@@ -32,37 +32,29 @@ class Window:
 		if cell.shell['Top'] == True:
 			var_name = "cell_" + str(iteration) + "_top"
 			start_x = cell_centre[0] - cell_deviation
-			end_x = cell_centre[0] + cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			end_y = cell_centre[1] - cell_deviation
-			self.walls_dict[var_name] = Wall((start_x, start_y), (end_x, end_y), self.window, self.walls, self.sprite_list)
+			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions + 1, 1, self.window, self.walls, self.sprite_list)
 		else:
 			pass
 		if cell.shell['Bottom'] == True:
 			var_name = "cell_" + str(iteration) + "_bottom"
 			start_x = cell_centre[0] - cell_deviation
-			end_x = cell_centre[0] + cell_deviation
 			start_y = cell_centre[1] + cell_deviation
-			end_y = cell_centre[1] + cell_deviation
-			self.walls_dict[var_name] = Wall((start_x, start_y), (end_x, end_y), self.window, self.walls, self.sprite_list)
+			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions, 1, self.window, self.walls, self.sprite_list)
 		else:
 			pass
 		if cell.shell['Left'] == True:
 			var_name = "cell_" + str(iteration) + "_left"
 			start_x = cell_centre[0] - cell_deviation
-			end_x = cell_centre[0] - cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			end_y = cell_centre[1] + cell_deviation
-			self.walls_dict[var_name] = Wall((start_x, start_y), (end_x, end_y), self.window, self.walls, self.sprite_list)
+			self.walls_dict[var_name] = Wall(start_x, start_y, 1, cell_dimensions, self.window, self.walls, self.sprite_list)
 		else:
 			pass
 		if cell.shell['Right'] == True:
 			var_name = "cell_" + str(iteration) + "_right"
 			start_x = cell_centre[0] + cell_deviation
-			end_x = cell_centre[0] + cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			end_y = cell_centre[1] + cell_deviation
-			self.walls_dict[var_name] = Wall((start_x, start_y), (end_x, end_y), self.window, self.walls, self.sprite_list)
+			self.walls_dict[var_name] = Wall(start_x, start_y, 1, cell_dimensions, self.window, self.walls, self.sprite_list)
 		else:
 			pass
 		if nums:
@@ -83,47 +75,77 @@ def text_objects(text, font):
 	return textSurface, textSurface.get_rect()
 
 class Wall(pygame.sprite.Sprite):
-	"""Class for each wall of each cell, cell class to be passed in along with the specific wall of the cell being rendered, passed in as it's relative position to the centre of the cell"""
-	def __init__(self, start, end, surface, group, sprite_list):
-		pygame.sprite.Sprite.__init__(self)
-		self.rect = pygame.draw.line(surface, black, start, end, 3)
-		group.add(self)
-		sprite_list.add(self)
+	""" Wall the player can run into. """
+	def __init__(self, x, y, width, height, surface, group, sprite_list):
+		""" Constructor for the wall that the player can run into. """
+		# Call the parent's constructor
+		super().__init__()
 
-class Player(pygame.sprite.Sprite):
-	change_x = 0
-	change_y = 0
-
-	def __init__(self, x, y, sprite_list):
-		pygame.sprite.Sprite.__init__(self)
-
-		self.image = pygame.Surface([15, 15])
+		# Make a wall, of the size specified in the parameters
+		self.image = pygame.Surface([width, height])
 		self.image.fill(black)
 
+		# Make our top-left corner the passed-in location.
+		self.rect = self.image.get_rect()
+		self.rect.y = y
+		self.rect.x = x
+			
+		group.add(self)
+		sprite_list.add(self)
+		
+class Player(pygame.sprite.Sprite):
+	""" This class represents the bar at the bottom that the player
+	controls. """
+
+	# Constructor function
+	def __init__(self, x, y, cell_dimensions):
+		# Call the parent's constructor
+		super().__init__()
+
+		# Set height, width
+		self.image = pygame.Surface([cell_dimensions * 0.5, cell_dimensions * 0.5])
+		self.image.fill(orange)
+
+		# Make our top-left corner the passed-in location.
 		self.rect = self.image.get_rect()
 		self.rect.y = y
 		self.rect.x = x
 
-		sprite_list.add(self)
+		# Set speed vector
+		self.change_x = 0
+		self.change_y = 0
+		self.walls = None
 
 	def changespeed(self, x, y):
+		""" Change the speed of the player. """
 		self.change_x += x
 		self.change_y += y
-
-	def update(self, walls):
+ 
+	def update(self):
+		""" Update the player position. """
+		# Move left/right
 		self.rect.x += self.change_x
-
-		block_hit_list = pygame.sprite.spritecollide(self, walls, False)
+ 
+		# Did this update cause us to hit a wall?
+		block_hit_list = pygame.sprite.spritecollide(self, self.walls, False)
 		for block in block_hit_list:
+			# print(block.rect.x, block.rect.y)
+			# If we are moving right, set our right side to the left side of
+			# the item we hit
 			if self.change_x > 0:
 				self.rect.right = block.rect.left
 			else:
+				# Otherwise if we are moving left, do the opposite.
 				self.rect.left = block.rect.right
-
+ 
+		# Move up/down
 		self.rect.y += self.change_y
-
-		block_hit_list = pygame.sprite.spritecollide(self, walls, False)
+ 
+		# Check and see if we hit anything
+		block_hit_list = pygame.sprite.spritecollide(self, self.walls, False)
 		for block in block_hit_list:
+ 
+			# Reset our position based on the top/bottom of the object.
 			if self.change_y > 0:
 				self.rect.bottom = block.rect.top
 			else:
@@ -142,15 +164,18 @@ def main(width, height, walls, nums = False):
 	level_1 = Maze(width, height)
 	level_1.soft_main(walls)
 	cell_dimensions = get_dimensions(level_1)
+	# print(cell_dimensions)
 	window = Window(((level_1.width * cell_dimensions) + cell_dimensions), ((level_1.height * cell_dimensions) + cell_dimensions), "Yet Another Maze Game", cell_dimensions, level_1)
-	# startCell = window.get_cell_center(level_1.cells[0])
-	# print("Start:", startCell)
-	player = Player(50, 50, window.sprite_list)
 	for i in range(len(level_1.cells.values())):
 		if i == 0:
 			playerstart = window.render_cell(level_1.cells[i], cell_dimensions, i, nums)
 		else:
-			window.render_cell(level_1.cells[i], cell_dimensions, i, nums) #def render_cell(self, cell, cell_dimensions, iteration)
+			window.render_cell(level_1.cells[i], cell_dimensions, i, nums)
+	x, y = playerstart
+	player = Player(x, y, cell_dimensions)
+	player.walls = window.walls_dict.values()
+	window.sprite_list.add(player)
+	speed = int(cell_dimensions * 0.1)
 	while True: #game loop
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
@@ -158,27 +183,27 @@ def main(width, height, walls, nums = False):
 				quit()
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_LEFT:
-					player.changespeed(-3, 0)
+					player.changespeed(-speed, 0)
 				elif event.key == pygame.K_RIGHT:
-					player.changespeed(3, 0)
+					player.changespeed(speed, 0)
 				elif event.key == pygame.K_UP:
-					player.changespeed(0, -3)
+					player.changespeed(0, -speed)
 				elif event.key == pygame.K_DOWN:
-					player.changespeed(0, 3)
+					player.changespeed(0, speed)
 
 			elif event.type == pygame.KEYUP:
 				if event.key == pygame.K_LEFT:
-					player.changespeed(3, 0)
+					player.changespeed(speed, 0)
 				elif event.key == pygame.K_RIGHT:
-					player.changespeed(-3, 0)
+					player.changespeed(-speed, 0)
 				elif event.key == pygame.K_UP:
-					player.changespeed(0, 3)
+					player.changespeed(0, speed)
 				elif event.key == pygame.K_DOWN:
-					player.changespeed(0, -3)
-
-		player.update(window.walls_dict.values())
-		# window.window.blit(window.window, player)
-		pygame.display.update()
+					player.changespeed(0, -speed)
+		window.window.fill(white)
+		window.sprite_list.update()
+		window.sprite_list.draw(window.window)
+		pygame.display.flip()
 		window.clock.tick(60)
 
 
