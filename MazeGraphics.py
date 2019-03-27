@@ -8,6 +8,8 @@ pygame.init()
 black = 0, 0, 0
 white = 255, 255, 255
 orange = 255, 165, 0
+red = 255, 0, 0
+green = 0, 255, 0
 
 class Window:
 	"""Class for display window and attributes associated with it such as size"""
@@ -33,35 +35,37 @@ class Window:
 			var_name = "cell_" + str(iteration) + "_top"
 			start_x = cell_centre[0] - cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions + 1, 1, self.window, self.walls, self.sprite_list)
+			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions, 1, self.window, self.walls, self.sprite_list, black)
 		else:
 			pass
 		if cell.shell['Bottom'] == True:
 			var_name = "cell_" + str(iteration) + "_bottom"
 			start_x = cell_centre[0] - cell_deviation
 			start_y = cell_centre[1] + cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions, 1, self.window, self.walls, self.sprite_list)
+			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions + 1, 1, self.window, self.walls, self.sprite_list, black)
+
 		else:
 			pass
 		if cell.shell['Left'] == True:
 			var_name = "cell_" + str(iteration) + "_left"
 			start_x = cell_centre[0] - cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, 1, cell_dimensions, self.window, self.walls, self.sprite_list)
+			self.walls_dict[var_name] = Wall(start_x, start_y, 1, cell_dimensions, self.window, self.walls, self.sprite_list, black)
 		else:
 			pass
 		if cell.shell['Right'] == True:
 			var_name = "cell_" + str(iteration) + "_right"
 			start_x = cell_centre[0] + cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, 1, cell_dimensions, self.window, self.walls, self.sprite_list)
+			self.walls_dict[var_name] = Wall(start_x, start_y, 1, cell_dimensions + 1, self.window, self.walls, self.sprite_list, black)
 		else:
 			pass
 		if nums:
 			message_display(str(cell.cellNo), cell_centre, self.window, int(get_dimensions(self.maze) / 2))
 		return cell_centre
 	def render_end(self):
-		pass
+		x, y = self.get_cell_center(self.maze.end)
+		end_sprite = Coin(x, y, 30, self.window, self.sprite_list)
 
 def message_display(text, center, window, size):
 	largeText = pygame.font.Font("freesansbold.ttf", size)
@@ -76,14 +80,14 @@ def text_objects(text, font):
 
 class Wall(pygame.sprite.Sprite):
 	""" Wall the player can run into. """
-	def __init__(self, x, y, width, height, surface, group, sprite_list):
+	def __init__(self, x, y, width, height, surface, group, sprite_list, colour):
 		""" Constructor for the wall that the player can run into. """
 		# Call the parent's constructor
 		super().__init__()
 
 		# Make a wall, of the size specified in the parameters
 		self.image = pygame.Surface([width, height])
-		self.image.fill(black)
+		self.image.fill(colour)
 
 		# Make our top-left corner the passed-in location.
 		self.rect = self.image.get_rect()
@@ -151,11 +155,25 @@ class Player(pygame.sprite.Sprite):
 			else:
 				self.rect.top = block.rect.bottom
 
+class Coin(pygame.sprite.Sprite):
+	def __init__(self, x, y, radius, surface, sprite_list):
+		super().__init__()
+
+		# Make a wall, of the size specified in the parameters
+		self.image = pygame.Surface([radius, radius])
+		pygame.draw.circle(self.image, red, (x, y), radius)
+		# Make our top-left corner the passed-in location.
+		self.rect = self.image.get_rect()
+		self.rect.y = y - int(radius / 2)
+		self.rect.x = x - int(radius / 2)
+			
+		sprite_list.add(self)
+
 def get_dimensions(maze):
 	if maze.width > maze.height:
-		dimension = int(500 / maze.width)
+		dimension = int(600 / maze.width)
 	else:
-		dimension = int(500 / maze.height)
+		dimension = int(600 / maze.height)
 	return dimension
 
 
@@ -164,7 +182,7 @@ def main(width, height, walls, nums = False):
 	level_1 = Maze(width, height)
 	level_1.soft_main(walls)
 	cell_dimensions = get_dimensions(level_1)
-	# print(cell_dimensions)
+	print(cell_dimensions)
 	window = Window(((level_1.width * cell_dimensions) + cell_dimensions), ((level_1.height * cell_dimensions) + cell_dimensions), "Yet Another Maze Game", cell_dimensions, level_1)
 	for i in range(len(level_1.cells.values())):
 		if i == 0:
@@ -173,6 +191,7 @@ def main(width, height, walls, nums = False):
 			window.render_cell(level_1.cells[i], cell_dimensions, i, nums)
 	x, y = playerstart
 	player = Player(x, y, cell_dimensions)
+	window.render_end()
 	player.walls = window.walls_dict.values()
 	window.sprite_list.add(player)
 	speed = int(cell_dimensions * 0.1)

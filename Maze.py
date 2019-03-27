@@ -114,7 +114,8 @@ class Maze:
 					queue.append(node)
 					# print(queue)
 					self.distances[node] = self.distances[current] + 1
-		self.end = self.cells[max(self.distances, key = self.distances.get)].coord
+		self.end = self.cells[max(self.distances, key = self.distances.get)]
+		print(self.end)
 
 	# def get_distances(self):
 	# 	queue = [0]
@@ -146,4 +147,4 @@ def main(width, height, walls):
 		# print(level_1.cells[i].__dict__)
 
 if __name__ == '__main__':
-	main()
+	main(10, 10, 0)
