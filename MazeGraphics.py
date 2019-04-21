@@ -35,14 +35,14 @@ class Window:
 			var_name = "cell_" + str(iteration) + "_top"
 			start_x = cell_centre[0] - cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions, 1, self.window, self.walls, self.sprite_list, black)
+			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions + 2, 2, self.window, self.walls, self.sprite_list, black)
 		else:
 			pass
 		if cell.shell['Bottom'] == True:
 			var_name = "cell_" + str(iteration) + "_bottom"
 			start_x = cell_centre[0] - cell_deviation
 			start_y = cell_centre[1] + cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions + 1, 1, self.window, self.walls, self.sprite_list, black)
+			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions + 2, 2, self.window, self.walls, self.sprite_list, black)
 
 		else:
 			pass
@@ -50,22 +50,22 @@ class Window:
 			var_name = "cell_" + str(iteration) + "_left"
 			start_x = cell_centre[0] - cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, 1, cell_dimensions, self.window, self.walls, self.sprite_list, black)
+			self.walls_dict[var_name] = Wall(start_x, start_y, 2, cell_dimensions + 2, self.window, self.walls, self.sprite_list, black)
 		else:
 			pass
 		if cell.shell['Right'] == True:
 			var_name = "cell_" + str(iteration) + "_right"
 			start_x = cell_centre[0] + cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, 1, cell_dimensions + 1, self.window, self.walls, self.sprite_list, black)
+			self.walls_dict[var_name] = Wall(start_x, start_y, 2, cell_dimensions + 2, self.window, self.walls, self.sprite_list, black)
 		else:
 			pass
 		if nums:
 			message_display(str(cell.cellNo), cell_centre, self.window, int(get_dimensions(self.maze) / 2))
 		return cell_centre
-	def render_end(self):
+	def render_end(self, cell_dimensions):
 		x, y = self.get_cell_center(self.maze.end)
-		end_sprite = Coin(x, y, 30, self.window, self.sprite_list)
+		end_sprite = Coin(x, y, int(cell_dimensions/2), self.window, self.sprite_list)
 
 def message_display(text, center, window, size):
 	largeText = pygame.font.Font("freesansbold.ttf", size)
@@ -141,6 +141,7 @@ class Player(pygame.sprite.Sprite):
 			else:
 				# Otherwise if we are moving left, do the opposite.
 				self.rect.left = block.rect.right
+		end_game_list = pygame.sprite.spritecollide(self, Coin, True)
  
 		# Move up/down
 		self.rect.y += self.change_y
@@ -161,6 +162,7 @@ class Coin(pygame.sprite.Sprite):
 
 		# Make a wall, of the size specified in the parameters
 		self.image = pygame.Surface([radius, radius])
+		self.image.fill(green)
 		pygame.draw.circle(self.image, red, (x, y), radius)
 		# Make our top-left corner the passed-in location.
 		self.rect = self.image.get_rect()
@@ -168,6 +170,7 @@ class Coin(pygame.sprite.Sprite):
 		self.rect.x = x - int(radius / 2)
 			
 		sprite_list.add(self)
+		
 
 def get_dimensions(maze):
 	if maze.width > maze.height:
@@ -191,7 +194,7 @@ def main(width, height, walls, nums = False):
 			window.render_cell(level_1.cells[i], cell_dimensions, i, nums)
 	x, y = playerstart
 	player = Player(x, y, cell_dimensions)
-	window.render_end()
+	window.render_end(cell_dimensions)
 	player.walls = window.walls_dict.values()
 	window.sprite_list.add(player)
 	speed = int(cell_dimensions * 0.1)
@@ -227,4 +230,4 @@ def main(width, height, walls, nums = False):
 
 
 if __name__ == '__main__':
-	main(10, 10, 0)
+	main(50, 50, 0)
