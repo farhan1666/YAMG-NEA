@@ -35,14 +35,14 @@ class Window:
 			var_name = "cell_" + str(iteration) + "_top"
 			start_x = cell_centre[0] - cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions + 2, 2, self.window, self.walls, self.sprite_list, black)
+			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions + 1, 1, self.window, self.walls, self.sprite_list, black)
 		else:
 			pass
 		if cell.shell['Bottom'] == True:
 			var_name = "cell_" + str(iteration) + "_bottom"
 			start_x = cell_centre[0] - cell_deviation
 			start_y = cell_centre[1] + cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions + 2, 2, self.window, self.walls, self.sprite_list, black)
+			self.walls_dict[var_name] = Wall(start_x, start_y, cell_dimensions + 1, 1, self.window, self.walls, self.sprite_list, black)
 
 		else:
 			pass
@@ -50,14 +50,14 @@ class Window:
 			var_name = "cell_" + str(iteration) + "_left"
 			start_x = cell_centre[0] - cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, 2, cell_dimensions + 2, self.window, self.walls, self.sprite_list, black)
+			self.walls_dict[var_name] = Wall(start_x, start_y, 1, cell_dimensions + 1, self.window, self.walls, self.sprite_list, black)
 		else:
 			pass
 		if cell.shell['Right'] == True:
 			var_name = "cell_" + str(iteration) + "_right"
 			start_x = cell_centre[0] + cell_deviation
 			start_y = cell_centre[1] - cell_deviation
-			self.walls_dict[var_name] = Wall(start_x, start_y, 2, cell_dimensions + 2, self.window, self.walls, self.sprite_list, black)
+			self.walls_dict[var_name] = Wall(start_x, start_y, 1, cell_dimensions + 1, self.window, self.walls, self.sprite_list, black)
 		else:
 			pass
 		if nums:
@@ -65,7 +65,21 @@ class Window:
 		return cell_centre
 	def render_end(self, cell_dimensions):
 		x, y = self.get_cell_center(self.maze.end)
-		end_sprite = Coin(x, y, int(cell_dimensions/2), self.window, self.sprite_list)
+		return Coin(x, y, int(cell_dimensions/2), self.window, self.sprite_list)
+
+class Text(pygame.sprite.Sprite):
+	def __init__(self, text, x, y, size, sprite_list, window):
+		super().__init__()
+		pygame.font.init()
+		font = pygame.font.Font("freesansbold.ttf", size)
+		self.image = font.render(text, True, black)
+		self.rect = self.image.get_rect()
+		TextSurf, TextRect = self.image, self.image.get_rect()
+		TextRect.center = x, y
+		sprite_list.add(self)
+	def update(self):
+		self.image.fill(white)
+
 
 def message_display(text, center, window, size):
 	largeText = pygame.font.Font("freesansbold.ttf", size)
@@ -119,6 +133,7 @@ class Player(pygame.sprite.Sprite):
 		self.change_x = 0
 		self.change_y = 0
 		self.walls = None
+		self.end_sprite = None
 
 	def changespeed(self, x, y):
 		""" Change the speed of the player. """
@@ -141,7 +156,6 @@ class Player(pygame.sprite.Sprite):
 			else:
 				# Otherwise if we are moving left, do the opposite.
 				self.rect.left = block.rect.right
-		end_game_list = pygame.sprite.spritecollide(self, Coin, True)
  
 		# Move up/down
 		self.rect.y += self.change_y
@@ -156,6 +170,11 @@ class Player(pygame.sprite.Sprite):
 			else:
 				self.rect.top = block.rect.bottom
 
+		coin_coll = pygame.sprite.collide_rect(self, self.end_sprite)
+		if coin_coll:
+			self.end_sprite.image.fill(white)
+			return True
+
 class Coin(pygame.sprite.Sprite):
 	def __init__(self, x, y, radius, surface, sprite_list):
 		super().__init__()
@@ -163,14 +182,12 @@ class Coin(pygame.sprite.Sprite):
 		# Make a wall, of the size specified in the parameters
 		self.image = pygame.Surface([radius, radius])
 		self.image.fill(green)
-		pygame.draw.circle(self.image, red, (x, y), radius)
 		# Make our top-left corner the passed-in location.
 		self.rect = self.image.get_rect()
 		self.rect.y = y - int(radius / 2)
 		self.rect.x = x - int(radius / 2)
 			
 		sprite_list.add(self)
-		
 
 def get_dimensions(maze):
 	if maze.width > maze.height:
@@ -181,28 +198,32 @@ def get_dimensions(maze):
 
 
 
-def main(width, height, walls, nums = False):
-	level_1 = Maze(width, height)
-	level_1.soft_main(walls)
-	cell_dimensions = get_dimensions(level_1)
-	print(cell_dimensions)
-	window = Window(((level_1.width * cell_dimensions) + cell_dimensions), ((level_1.height * cell_dimensions) + cell_dimensions), "Yet Another Maze Game", cell_dimensions, level_1)
-	for i in range(len(level_1.cells.values())):
+def main(width, height, nums = False):
+	currentLevel = Maze(width, height)
+	currentLevel.init()
+	cell_dimensions = get_dimensions(currentLevel)
+	window = Window(((currentLevel.width * cell_dimensions) + cell_dimensions), ((currentLevel.height * cell_dimensions) + cell_dimensions), "Yet Another Maze Game", cell_dimensions, currentLevel)
+	for i in range(len(currentLevel.cells.values())):
 		if i == 0:
-			playerstart = window.render_cell(level_1.cells[i], cell_dimensions, i, nums)
+			playerstart = window.render_cell(currentLevel.cells[i], cell_dimensions, i, nums)
 		else:
-			window.render_cell(level_1.cells[i], cell_dimensions, i, nums)
+			window.render_cell(currentLevel.cells[i], cell_dimensions, i, nums)
 	x, y = playerstart
 	player = Player(x, y, cell_dimensions)
-	window.render_end(cell_dimensions)
+	score = int(currentLevel.size ** 2)
 	player.walls = window.walls_dict.values()
+	player.end_sprite = window.render_end(cell_dimensions)
 	window.sprite_list.add(player)
-	speed = int(cell_dimensions * 0.1)
-	while True: #game loop
+	speed = int(cell_dimensions * 0.05) + 1
+	print(speed)
+	gameEnd = False
+	waitCount = False
+	wait = 10
+	while not gameEnd: #game loop
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
-				quit()
+				return
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_LEFT:
 					player.changespeed(-speed, 0)
@@ -223,11 +244,22 @@ def main(width, height, walls, nums = False):
 				elif event.key == pygame.K_DOWN:
 					player.changespeed(0, -speed)
 		window.window.fill(white)
-		window.sprite_list.update()
+		scoreDisplay = Text("Score: " + str(score), 200, 200, int(get_dimensions(currentLevel) / 2), window.sprite_list, window.window)
+		score = int(score - score * 0.001)
 		window.sprite_list.draw(window.window)
+		window.sprite_list.update()
+		window.sprite_list.remove(scoreDisplay)
+		if player.update():
+			waitCount = True
+		if waitCount:
+			wait -= 1
+		if wait == 0:
+			gameEnd = True
+			pygame.quit()
+			return
 		pygame.display.flip()
 		window.clock.tick(60)
 
 
 if __name__ == '__main__':
-	main(50, 50, 0)
+	main(56, 56, 0)
