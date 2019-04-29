@@ -153,7 +153,6 @@ class Player(pygame.sprite.Sprite):
 
 		coin_coll = pygame.sprite.collide_rect(self, self.end_sprite)
 		if coin_coll:
-			self.end_sprite.image.fill((255,255,255,0))
 			return True
 
 class Coin(pygame.sprite.Sprite):
