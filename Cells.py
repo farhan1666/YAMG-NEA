@@ -5,4 +5,3 @@ class Cell:
 		self.adjacent_cells = {}
 		self.shell = {'Top':True, 'Right':True, 'Bottom':True, 'Left':True}
 		self.coord = None
-		self.rect = None

@@ -2,16 +2,16 @@ from Cells import Cell
 from random import choice, randint
 from sys import setrecursionlimit
 class Maze:
-	def __init__(self, width, height):
+	def __init__(self, width, height, difficulty = 0):
 		self.cells = dict()
 		self.graph = dict()
-		self.graph_distances = dict()
 		self.distances = dict()
 		self.height = height
 		self.width = width
 		self.size = self.width * self.height
 		self.dfs_stack = list()
-		# self.difficulty = 0
+		self.i = 1
+		self.difficulty = difficulty
 		self.end = None
 	def generate_cells(self):
 		for i in range(self.size):
@@ -83,9 +83,10 @@ class Maze:
 				pass
 		else:
 			self.dfs_stack.append(currentCell.cellNo)
-		valid = False
 		if len(self.check_unvisited_adjacent_cells(currentCell)) != 0:
-			valid = True
+			newCell = choice(self.check_unvisited_adjacent_cells(currentCell))
+			self.break_wall(currentCell, self.cells[newCell])
+			self.generate_maze(self.cells[newCell])
 		else:
 			if len(self.dfs_stack) != 0:
 				self.dfs_stack.pop()
@@ -95,10 +96,7 @@ class Maze:
 					pass
 			else:
 				pass
-		if valid:
-			newCell = choice(self.check_unvisited_adjacent_cells(currentCell))
-			self.break_wall(currentCell, self.cells[newCell])
-			self.generate_maze(self.cells[newCell])
+			
 	def extra_paths(self, n):
 		for i in range(n):
 			randCell = self.cells[randint(0, (self.size) - 1)]
@@ -114,19 +112,11 @@ class Maze:
 					queue.append(node)
 					# print(queue)
 					self.distances[node] = self.distances[current] + 1
+				else:
+					if self.distances[current] + 1 < self.distances[node]:
+						self.distances[node] = self.distances[current] + 1
+						queue.append(node)
 		self.end = self.cells[max(self.distances, key = self.distances.get)]
-
-	# def get_distances(self):
-	# 	queue = [0]
-	# 	visited = list()
-	# 	self.distances[node] = 0
-	# 	visited.append(node)
-	# 	for n in node.adjacent_cells.keys():
-	# 		self.distances[n] = self.distances[node] + 1
-	# 		queue.append(n)
-	# 	while queue:
-	# 		current = queue.pop()
-
 
 	def init(self):
 		setrecursionlimit(30001)
@@ -134,15 +124,15 @@ class Maze:
 		self.get_adjacent_cells()
 		self.init_graph()
 		self.generate_maze(self.cells[0])
-		# self.extra_paths(self.difficulty)
+		self.extra_paths(self.difficulty)
 		self.get_distances()
 		# print(self.distances)
 		# print(max(self.distances, key = self.distances.get))
 def main(width, height, walls):
 	level_1 = Maze(width, height)
-	level_1.init(walls)
+	level_1.init()
 	# for i in range(level_1.size):
 		# print(level_1.cells[i].__dict__)
 
 if __name__ == '__main__':
-	main(10, 10, 0)
+	main(5, 5, 0)
