@@ -137,7 +137,7 @@ class Player(pygame.sprite.Sprite):
 			else:
 				# Otherwise if we are moving left, do the opposite.
 				self.rect.left = block.rect.right
- 
+
 		# Move up/down
 		self.rect.y += self.change_y
  
@@ -153,7 +153,7 @@ class Player(pygame.sprite.Sprite):
 
 		coin_coll = pygame.sprite.collide_rect(self, self.end_sprite)
 		if coin_coll:
-			self.end_sprite.image.fill(white)
+			self.end_sprite.image.fill((255,255,255,0))
 			return True
 
 class Coin(pygame.sprite.Sprite):
@@ -226,14 +226,16 @@ def main(width, height, difficulty = 0):
 					player.changespeed(0, -speed)
 		window.window.fill(white)
 		scoreDisplay = Text("Score: " + str(score), int(get_dimensions(currentLevel) / 2), window.sprite_list, window.window)
-		score = int(score - score * 0.001)
 		window.sprite_list.draw(window.window)
 		window.sprite_list.update()
 		window.sprite_list.remove(scoreDisplay)
 		if player.update():
+			window.sprite_list.remove(player.end_sprite)
 			waitCount = True
 		if waitCount:
 			wait -= 1
+		else:
+			score = int(score - score * 0.001)
 		if wait == 0:
 			gameEnd = True
 			pygame.quit()
