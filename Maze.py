@@ -111,13 +111,11 @@ class Maze:
 	def get_distances(self):
 		queue = [0]
 		self.distances[0] = 0
-		# print(self.graph)
 		while queue:
 			current = queue.pop()
 			for node in self.graph[current]:
 				if node not in self.distances:
 					queue.append(node)
-					# print(queue)
 					self.distances[node] = self.distances[current] + 1
 				else:
 					if self.distances[current] + 1 < self.distances[node]:
@@ -125,21 +123,8 @@ class Maze:
 						queue.append(node)
 		self.end = self.cells[max(self.distances, key = self.distances.get)]
 
-	# def init(self):
-	# 	setrecursionlimit(30001)
-	# 	self.generate_cells()
-	# 	self.get_adjacent_cells()
-	# 	self.init_graph()
-	# 	self.generate_maze(self.cells[0])
-	# 	self.extra_paths(self.difficulty)
-	# 	self.get_distances()
-	# 	# print(self.distances)
-	# 	# print(max(self.distances, key = self.distances.get))
 def main(width, height, walls):
 	level_1 = Maze(width, height)
-	# level_1.init()
-	# for i in range(level_1.size):
-		# print(level_1.cells[i].__dict__)
 
 if __name__ == '__main__':
 	main(5, 5, 0)
