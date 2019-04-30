@@ -181,7 +181,7 @@ def get_dimensions(maze):
 def main(width, height, difficulty = 0):
 	pygame.init()
 	currentLevel = Maze(width, height, difficulty)
-	currentLevel.init()
+	# currentLevel.init()
 	cell_dimensions = get_dimensions(currentLevel)
 	window = Window(((currentLevel.width * cell_dimensions) + cell_dimensions), ((currentLevel.height * cell_dimensions) + cell_dimensions), "Yet Another Maze Game", cell_dimensions, currentLevel)
 	for i in range(len(currentLevel.cells.values())):

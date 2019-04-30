@@ -13,6 +13,13 @@ class Maze:
 		self.i = 1
 		self.difficulty = difficulty
 		self.end = None
+		setrecursionlimit(30001)
+		self.generate_cells()
+		self.get_adjacent_cells()
+		self.init_graph()
+		self.generate_maze(self.cells[0])
+		self.extra_paths(self.difficulty)
+		self.get_distances()
 	def generate_cells(self):
 		for i in range(self.size):
 			self.cells[i] = Cell(i)
@@ -118,19 +125,19 @@ class Maze:
 						queue.append(node)
 		self.end = self.cells[max(self.distances, key = self.distances.get)]
 
-	def init(self):
-		setrecursionlimit(30001)
-		self.generate_cells()
-		self.get_adjacent_cells()
-		self.init_graph()
-		self.generate_maze(self.cells[0])
-		self.extra_paths(self.difficulty)
-		self.get_distances()
-		# print(self.distances)
-		# print(max(self.distances, key = self.distances.get))
+	# def init(self):
+	# 	setrecursionlimit(30001)
+	# 	self.generate_cells()
+	# 	self.get_adjacent_cells()
+	# 	self.init_graph()
+	# 	self.generate_maze(self.cells[0])
+	# 	self.extra_paths(self.difficulty)
+	# 	self.get_distances()
+	# 	# print(self.distances)
+	# 	# print(max(self.distances, key = self.distances.get))
 def main(width, height, walls):
 	level_1 = Maze(width, height)
-	level_1.init()
+	# level_1.init()
 	# for i in range(level_1.size):
 		# print(level_1.cells[i].__dict__)
 
